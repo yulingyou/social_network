@@ -83,7 +83,7 @@ Define the attributes of your Model class. You can usually map the table columns
 class UserAccount
 
   # Replace the attributes by your own columns.
-  attr_accessor :id, :name, :cohort_name
+  attr_accessor :id, :username, :email_add
 end
 
 # The keyword attr_accessor is a special Ruby feature
@@ -142,7 +142,7 @@ class UserAccountRepository
     #Doesn't need to return anything(only updates the record)
   end
 
-  def delete(user_account)
+  def delete(id)
     # DELETE FROM user_accounts WHERE ID = $1;
     #Doesn't need to return anything(only deletes the record)
   end
