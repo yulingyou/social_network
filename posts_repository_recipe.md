@@ -1,4 +1,4 @@
-# user_accounts Model and Repository Classes Design Recipe
+# posts Model and Repository Classes Design Recipe
 
 _Copy this recipe template to design and implement Model and Repository classes for a database table._
 
@@ -8,16 +8,17 @@ If the table is already created in the database, you can skip this step.
 
 Otherwise, [follow this recipe to design and create the SQL schema for your table](./single_table_design_recipe_template.md).
 
-*In this template, we'll use an example table `user_accounts`*
+*In this template, we'll use an example table `posts`*
 
 ```
 # EXAMPLE
 
-Table: user_accounts
+Table: posts
 
 Columns:
-id | username | email_add
+id | title | content | view
 ```
+
 
 ## 2. Create Test SQL seeds
 
@@ -35,19 +36,20 @@ If seed data is provided (or you already created it), you can skip this step.
 -- so we can start with a fresh state.
 -- (RESTART IDENTITY resets the primary key)
 
-TRUNCATE TABLE user_accounts RESTART IDENTITY; -- replace with your own table name.
+TRUNCATE TABLE posts RESTART IDENTITY; -- replace with your own table name.
 
 -- Below this line there should only be `INSERT` statements.
 -- Replace these statements with your own seed data.
 
-INSERT INTO user_accounts (username, email_add) VALUES ('David', 'david@mail.com');
-INSERT INTO user_accounts (username, email_add) VALUES ('Anna', 'anna@mail.com');
+INSERT INTO posts (title, content, view, user_account_id) VALUES ('post1', 'aaa', '4','1');
+INSERT INTO posts (title, content, view, user_account_id) VALUES ('post2', 'bbb', '10', '2');
 ```
+
 
 Run this SQL file on the database to truncate (empty) the table, and insert the seed data. Be mindful of the fact any existing records in the table will be deleted.
 
 ```bash
-psql -h 127.0.0.1 social_network_test < seeds.sql
+psql -h 127.0.0.1 social_network_test < posts.seeds.sql
 ```
 
 ## 3. Define the class names
@@ -56,16 +58,16 @@ Usually, the Model class name will be the capitalised table name (single instead
 
 ```ruby
 # EXAMPLE
-# Table name: user_accounts
+# Table name: posts
 
 # Model class
-# (in lib/user_account.rb)
-class UserAccount
+# (in lib/post.rb)
+class Post
 end
 
 # Repository class
-# (in lib/user_account_repository.rb)
-class UserAccountRepository
+# (in lib/post_repository.rb)
+class PostRepository
 end
 ```
 
@@ -75,12 +77,12 @@ Define the attributes of your Model class. You can usually map the table columns
 
 ```ruby
 # EXAMPLE
-# Table name: user_accounts
+# Table name: posts
 
 # Model class
-# (in lib/user_account.rb)
+# (in lib/post.rb)
 
-class UserAccount
+class Post
 
   # Replace the attributes by your own columns.
   attr_accessor :id, :username, :email_add
@@ -105,45 +107,45 @@ Using comments, define the method signatures (arguments and return value) and wh
 
 ```ruby
 # EXAMPLE
-# Table name: user_accounts
+# Table name: posts
 
 # Repository class
-# (in lib/user_account_repository.rb)
+# (in lib/post_repository.rb)
 
-class UserAccountRepository
+class PostRepository
 
   # Selecting all records
   # No arguments
   def all
     # Executes the SQL query:
-    # SELECT id, username, email_add FROM user_accounts;
+    # SELECT id, title, content, view, user_account_id FROM posts;
 
-    # Returns an array of user_account objects.
+    # Returns an array of post objects.
   end
 
   # Gets a single record by its ID
   # One argument: the id (number)
   def find(id)
     # Executes the SQL query:
-    # SELECT id, username, email_add FROM user_accounts WHERE id = $1;
+    # SELECT id, title, content, view, user_account_id FROM posts WHERE id = $1;
 
-    # Returns a single user_account object.
+    # Returns a single post object.
   end
 
   # Add more methods below for each operation you'd like to implement.
 
   def create(user_account)
-     # INSERT INTO user_accounts (username, email_add) VALUES($1, $2);
+     # INSERT INTO posts (title, content, view, user_account_id) VALUES($1, $2, $3, $4);
      #Doesn't need to return anything(only creates the record)
   end
 
   def update(user_account)
-    #UPDATE user_accounts SET username = $1, email_add = $2, WHERE id = $3;
+    #UPDATE posts SET title = $1, content = $2, view = $3 , user_account_id = $4 WHERE id = $5;
     #Doesn't need to return anything(only updates the record)
   end
 
   def delete(id)
-    # DELETE FROM user_accounts WHERE ID = $1;
+    # DELETE FROM posts WHERE ID = $1;
     #Doesn't need to return anything(only deletes the record)
   end
 end
@@ -159,79 +161,93 @@ These examples will later be encoded as RSpec tests.
 # EXAMPLES
 
 # 1
-# Get all user_accounts
+# Get all posts
 
-repo = User_AccountRepository.new
+repo = PostRepository.new
 
-user_accounts = repo.all
+posts = repo.all
 
-user_accounts.length # =>  2
+posts.length # =>  2
 
-user_accounts[0].id # =>  1
-user_accounts[0].username # =>  'David'
-user_accounts[0].email_add # =>  'david@mail.com'
+posts[0].id # =>  1
+posts[0].title # =>  'post1'
+posts[0].content # =>  'aaa'
+posts[0].view # => '4'
+posts[0].user_account_id # => '1'
 
-user_accounts[1].id # =>  2
-user_accounts[1].username # =>  'Anna'
-user_accounts[1].email_add # =>  'anna@mail.com'
+posts[1].id # =>  2
+posts[1].title # =>  'post2'
+posts[1].content # =>  'bbb'
+posts[0].view # => '10'
+posts[0].user_account_id # => '2'
 
 # 2
-# Get a single user_account
+# Get a single post
 
-repo = UserAccountRepository.new
+repo = PostRepository.new
 
-user_account = repo.find(1)
+post = repo.find(1)
 
-user_account.id # =>  1
-user_account.username # =>  'David'
-user_account.email_add # =>  'david@mail.com'
+post.id # =>  1
+post.title # =>  'post1'
+post.content # =>  'aaa'
+post.view # => '4'
+post.user_account_id # => '1'
 
 # Add more examples for each method
 
 #3
-# Create a new user_account
-repo = UserAccountRepository.new
+# Create a new post
+repo = PostRepository.new
 
-user_account = UserAccount.new
-user_account.username = "Max"
-user_account.email_add = "max@mail.com"
+post = Post.new
+post.title = "post3"
+post.content = "ccc"
+post.view  = "6"
+post.user_accout_id  = '2'
 
 
-repo.create(user_account)
+repo.create(post)
 
-user_accounts = repo.all
+posts = repo.all
 
-last_user_account = user_accounts.last
-user_account.username # => "Max"
-user_account.email_add # => "max@mail.com"
+last_post = posts.last
+post.title # => "post3"
+post.content # => "ccc"
+post.view # => "6"
+post.user_accout_id # => '2'
 
 #4
-# Delete a user_account
+# Delete a post
 
-repo = UserAccountRepository.new
+repo = PostRepository.new
 
 repo.delete(1)
 
-all_user_accounts = repo.all
-all_user_accounts.length # => 1
-all_user_accounts.first.id # => '2'
+all_posts = repo.all
+all_posts.length # => 1
+all_posts.first.id # => '2'
 
 #5 
-# Update a user_account
+# Update a post
 
-repo = UserAccountRepository.new
+repo = PostRepository.new
 
-user_accounts = repo.find(1)
+post = repo.find(1)
 
-user_accounts.username = 'David2'
-user_accounts.email_add = 'david2@mail.com'
+post.title = 'post01'
+post.content = 'aaaaaa'
+post.view = '12'
+post.user_account_id = '2'
 
-repo.update(user_accounts)
+repo.update(post)
 
-updated_user_accounts = repo.find(1)
+updated_post = repo.find(1)
 
-updated_user_accounts.username # => 'David2'
-updated_user_accounts.email_add # => 'david2@mail.com'
+updated_post.title # => 'post01'
+updated_post.content # => 'aaaaaa'
+updated_post.view  # => '12'
+post.user_account_id # => '2'
 ```
 
 Encode this example as a test.
@@ -245,9 +261,9 @@ This is so you get a fresh table contents every time you run the test suite.
 ```ruby
 # EXAMPLE
 
-# file: spec/user_account_repository_spec.rb
+# file: spec/post_repository_spec.rb
 
-def reset_user_accounts_table
+def reset_posts_table
   seed_sql = File.read('spec/seeds.sql')
   if ENV["PG_password"]
   connection = PG.connect({ host: '127.0.0.1', dbname: 'social_network_test', password: ENV["PG_password"] })
@@ -257,9 +273,9 @@ def reset_user_accounts_table
   connection.exec(seed_sql)
 end
 
-describe UserAccountRepository do
+describe PostRepository do
   before(:each) do 
-    reset_user_accounts_table
+    reset_posts_table
   end
 
   # (your tests will go here).
